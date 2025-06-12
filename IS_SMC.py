@@ -1,107 +1,91 @@
 from laplace_solve import laplace_solver
 from resampling import resample
 from markov_kernal import markov_kernel
+from regula_falsi import NewBeta
+
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import cm
-n=10
-particle=1.0 # we need to find the value of the particle or a distribution of this particle (considering this is our unknown parameter u)
-experiment_exact,h = laplace_solver(n, particle) #this will be our desired / actual value from the experiment (assume)
-#---------------
-#add noise to the experiment
-#---------------
 
-experiment_total=0
-for _ in range(5):
-    # adding noise to the experiment
+# -----------------------------
+# Configuration & Initialization
+# -----------------------------
 
-    noise=(np.random.normal(0, 0.1, size=experiment_exact.shape))
-    experiment_total+=noise
-    experiment=experiment_exact+experiment_total
-    
-    #---------------
-experiment=experiment/5 #mean of the recorded values
+n = 10
+true_particle = 1.0  # Ground truth (unknown parameter)
+experiment_exact, h = laplace_solver(n, true_particle)
 
+# Add noise to simulate measurement errors
+num_noisy_versions = 5
+noise_levels = np.random.uniform(0, 1, size=num_noisy_versions)
+print(f"Noise levels: {noise_levels}")
 
+experiment_noisy_versions = [
+    experiment_exact + np.random.normal(0, sigma, size=experiment_exact.shape)
+    for sigma in noise_levels
+]
+experiment = np.mean(experiment_noisy_versions, axis=0)
 
+# Particle initialization
+num_particles = 10
+particles = np.random.uniform(low=-6.0, high=6.0, size=num_particles)
+weights = [1.0 / num_particles] * num_particles  # Equal initial weights
 
+# -----------------------------
+# Potential Calculation Function
+# -----------------------------
 
-particle_init = np.random.uniform(low=-6.0, high=6.0, size=1000) # initial guess of the particle using uniform distribution
+def compute_potentials(n, particles, experiment, h):
+    """Calculate potential  for each particle."""
+    potentials = []
+    for p in particles:
+        sim_output, _ = laplace_solver(n, p)
+        l2_error = h**2 * np.sum((sim_output - experiment)**2) / 2
+        potentials.append(l2_error)
+    return potentials
 
-#print("Initial guess of the particle: ", particle_init)
+# Compute initial potential values
+potentials = compute_potentials(n, particles, experiment, h)
+#print(f"Potential values: {potentials}")
+#print(f"Initial weights: {weights}")
 
+# -----------------------------
+# Adaptive Tempering SMC Loop
+# -----------------------------
 
-#starting beta from 0.0 to 1.0 with 0.1 step size
-#beta = np.arange(0.0, 1.1, 0.1)
-
-
-
-
-#--------------
-# step1&2
-# --------------
-m = 1
 beta = 0.0
 
 while beta < 1.0:
-    # --------------
-    # adaptive tempering
-    # --------------
-    beta = np.exp(0.7 * m / 10) - 1
-    beta = min(beta, 1.0)
-    print("Beta value: ", beta)
-    phi = []  # phi = 1/2||desired-simualtion(u)||^2 in L^2 norm.
-    error = []
-    normzng_factor = 0
-    mu_list = []  # mu list is the weight according to the potential phi
+    delta = NewBeta(potentials, weights, beta)
+    beta += delta
+    print(f"Updated beta: {beta:.4f}")
 
-    for p in particle_init:
-        phi_i = np.exp(-beta * (h ** 2 * (np.sum(((laplace_solver(n, p)[0] - experiment) ** 2)) / 2)))
-        phi.append(phi_i)
-        normzng_factor += phi_i
-    for k in range(0, len(phi)):
-        mu_list.append(phi[k] / normzng_factor)
+    # Update weights using tempered likelihood
+    likelihoods = [np.exp(-beta * pot) for pot in potentials]
+    norm_factor = sum(likelihoods)
+    weights = [lk / norm_factor for lk in likelihoods]
 
-    # --------------
-    # step3
-    # --------------
-    particle_resampled = resample(particle_init, mu_list)
-    # -------
-    # equalizing the weights
-    # -------
-    mu_list = [1 / len(mu_list)] * len(mu_list)
+    # Resampling step
+    resampled_particles = resample(particles, weights)
+    weights = [1.0 / num_particles] * num_particles  # Reset weights to  1/num_particles
 
-    # --------------
-    # step4
-    # --------------
-    wiggled_particle = markov_kernel(particle_init, particle_resampled, experiment, n, h, beta)
+    # MCMC step using Markov kernel
+    particles = markov_kernel(particles, resampled_particles, experiment, n, h, beta)
 
-    # Plot the updated particle_resampled values
-    fig, axs = plt.subplots(1, 2, figsize=(15, 6))
+    # -----------------------------
+    # Visualization
+    # -----------------------------
+    fig, axs = plt.subplots(1, 2, figsize=(14, 5))
 
-    # Plot the resampled particle distribution
-    axs[0].hist(particle_resampled, bins=50, density=True, alpha=0.6, color='orange')
-    axs[0].set_xlabel('Particle Resampled')
-    axs[0].set_ylabel('Probability Density')
-    axs[0].set_title(f'PDF of Resampled Particle (beta={beta:.3f})')
+    axs[0].hist(resampled_particles, bins=50, density=True, alpha=0.7, color='orange')
+    axs[0].set_title(f'Resampled Particle PDF (β = {beta:.3f})')
+    axs[0].set_xlabel('Particle Value')
+    axs[0].set_ylabel('Density')
 
-    # Plot the probability distribution function (PDF) of the initial particle distribution
-    axs[1].hist(particle_init, bins=50, density=True, alpha=0.6, color='green')
-    axs[1].set_xlabel('Initial Particle')
-    axs[1].set_ylabel('Probability Density')
-    axs[1].set_title('PDF of Initial Particle')
+    axs[1].hist(particles, bins=50, density=True, alpha=0.7, color='green')
+    axs[1].set_title('Particles After MCMC Step')
+    axs[1].set_xlabel('Particle Value')
+    axs[1].set_ylabel('Density')
+
+    plt.tight_layout()
     plt.savefig(f'particle_resampled_pdf_beta_{beta:.3f}.png')
-
-    m += 1
-
-
-
-
-
-
-
-
-
-
-
-
+    plt.close()
