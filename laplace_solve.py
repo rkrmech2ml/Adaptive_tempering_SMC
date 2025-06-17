@@ -7,7 +7,7 @@ import math
 import matplotlib.pyplot as plt # side-stepping mpl backend
 import warnings
 warnings.filterwarnings("ignore")
-from IPython.display import HTML
+
 from mpl_toolkits.mplot3d import axes3d
 import matplotlib.pyplot as plt
 from scipy.sparse import csr_matrix, diags

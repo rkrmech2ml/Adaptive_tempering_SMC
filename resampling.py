@@ -2,16 +2,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-def resample(particle_init, w_list):
+def resample(particles, w_list):
+    N = len(particles)
+    w = np.array(w_list)
+    w /= np.sum(w)  # Ensure weights sum to 1
 
+    cdf = np.cumsum(w)
     particle_resampled = []
-    for k in range(len(w_list)):
-        r = np.random.uniform(0, 1)
-        if r < np.cumsum(w_list)[k]:
-           #print("Selected particle: ", particle_init[k])
-            if k < len(particle_init):
-                particle_resampled.append(particle_init[k])
-            else:
-                raise IndexError(f"Index {k} is out of bounds for particle_init with size {len(particle_init)}")
-   #print("Resampled particle: ", particle_resampled)
+
+    for _ in range(N):
+        r = np.random.rand()
+        for k in range(N):
+            if r < cdf[k]:
+                particle_resampled.append(particles[k])
+                break
+
     return particle_resampled

@@ -30,7 +30,7 @@ def NewBeta(potential, w_list, beta):
 
         # Function to find root of: f(x) = m(x)^2 * (cv_^2 + 1) - s(x)
         def f(x):
-            cv_ = 0.01
+            cv_ = 0.25
             m_val = integrand_m(x)
             s_val = integrand_s(x)
             val = cv_ * m_val - np.sqrt(s_val- m_val)
@@ -39,8 +39,8 @@ def NewBeta(potential, w_list, beta):
 
         # Regula Falsi method implementation
         def regula_falsi(f, beta, tol=1e-2, max_iter=2):
-            a = 0          
-            b = 0.5- beta
+            a = 1e-4
+            b = min(1.0 - beta, 1.0)
             fa = f(a)
             fb = f(b)
 
