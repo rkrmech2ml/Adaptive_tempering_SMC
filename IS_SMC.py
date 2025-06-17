@@ -6,6 +6,8 @@ from regula_falsi import NewBeta
 import numpy as np
 import matplotlib.pyplot as plt
 
+#testing the version in git
+
 # ---------------------------------
 # Configuration & Initialization
 # ---------------------------------
