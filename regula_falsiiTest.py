@@ -12,7 +12,7 @@ def new_beta_test(potential, w_list, beta):
         val = 0.0
         for i in range(len(w_list)):
             val = np.exp(-potential[i] * DeltaBeta) * w_list[i]
-            val = val * val
+            #val = val * val
             exponents.append(val)
         mean_exp = np.mean(exponents)
         print(f"(integrand_m({DeltaBeta}))^2: {mean_exp}")
@@ -22,7 +22,7 @@ def new_beta_test(potential, w_list, beta):
         exponents2 = []
         val = 0.0
         for i in range(len(w_list)):
-            val = np.exp((-(potential[i] * DeltaBeta)) ** 2) * w_list[i]
+            val = ((np.exp(-(potential[i]  * DeltaBeta)))**2)* w_list[i] 
             exponents2.append(val)
         mean_exp2 = np.mean(exponents2)
         print(f"integrand_s({DeltaBeta}): {mean_exp2}")
@@ -32,7 +32,7 @@ def new_beta_test(potential, w_list, beta):
         cv_ = 0.25
         m_val = integrand_m(x)
         s_val = integrand_s(x)
-        val = cv_ * m_val - np.sqrt(s_val - m_val)
+        val = cv_ * (m_val) - np.sqrt(s_val - m_val**2)
         print(f"f({x}): f={val}")
         return val
 
@@ -41,7 +41,7 @@ def new_beta_test(potential, w_list, beta):
     # Plot f(x) over a range
     import matplotlib.pyplot as plt
 
-    x_vals = np.linspace(0, 20, 100)
+    x_vals = np.linspace(0, 1, 100)
     y_vals = [f(x) for x in x_vals]
 
     plt.plot(x_vals, y_vals, label="f(x)")

@@ -30,7 +30,7 @@ experiment_noisy_versions = [
 experiment = np.mean(experiment_noisy_versions, axis=0)
 
 # Particle initialization
-num_particles = 10
+num_particles = 100
 particles = np.random.uniform(low=-6.0, high=6.0, size=num_particles)
 particles_initial = particles.copy()  # Store initial particles for reference
 weights = [1.0 / num_particles] * num_particles  # Equal initial weights
@@ -41,6 +41,14 @@ weights = [1.0 / num_particles] * num_particles  # Equal initial weights
 
 # Compute initial potential values
 potentials = compute_potentials(n, particles, experiment, h)
+plt.figure(figsize=(8, 4))
+plt.plot(particles, potentials, 'bo', alpha=0.6)
+plt.xlabel('Particle Value')
+plt.ylabel('Potential')
+plt.title('Potential vs Particle Value')
+plt.grid(True)
+plt.tight_layout()
+plt.show()
 #print(f"Potential values: {potentials}")
 #print(f"Initial weights: {weights}")
 
@@ -58,7 +66,7 @@ while beta < 0.9999:
     #-------------------------
     #delta = new_beta_test(potentials, weights, beta)
     delta = NewBeta(potentials, weights, beta)
-    #delta = 0.5  # Limit the step size to avoid large jumps
+    #delta = 0.1  # Limit the step size to avoid large jumps
     beta = min(beta + delta, 1.0)
     print(f"Current beta: {beta:.3f}")
 
@@ -75,8 +83,9 @@ while beta < 0.9999:
     #step 3: resampling 
     #-------------------------
     resampled_particles = resample(particles, weights)
-    weights = [1.0 / num_particles] * num_particles  # Reset weights to  1/num_particles
-
+ 
+    weights = [1.0 / num_particles] * num_particles  # Reset weights to  1/num_particles 
+    #print(f"weights reset: {weights}")
     #-------------------------
     #step 4: Markov kernel  
     #-------------------------
@@ -93,18 +102,18 @@ while beta < 0.9999:
     # -----------------------------
     # Visualization
     # -----------------------------
-    fig, axs = plt.subplots(1, 2, figsize=(14, 5))
+    # fig, axs = plt.subplots(1, 2, figsize=(14, 5))
 
-    axs[0].hist(particles, bins=50, density=True, alpha=0.7, color='orange')
-    axs[0].set_title(f'Resampled Particle PDF (β = {beta:.3f})')
-    axs[0].set_xlabel('Particle Value')
-    axs[0].set_ylabel('Density')
+    # axs[0].hist(particles, bins=50, density=True, alpha=0.7, color='orange')
+    # axs[0].set_title(f'Resampled Particle PDF (β = {beta:.3f})')
+    # axs[0].set_xlabel('Particle Value')
+    # axs[0].set_ylabel('Density')
 
-    axs[1].hist(particles_initial, bins=50, density=True, alpha=0.7, color='green')
-    axs[1].set_title('Particles After MCMC Step')
-    axs[1].set_xlabel('Particle Value')
-    axs[1].set_ylabel('Density')
+    # axs[1].hist(particles_initial, bins=50, density=True, alpha=0.7, color='green')
+    # axs[1].set_title('Particles After MCMC Step')
+    # axs[1].set_xlabel('Particle Value')
+    # axs[1].set_ylabel('Density')
 
-    plt.tight_layout()
-    plt.savefig(f'particle_resampled_pdf_beta_{beta:.3f}.png')
-    plt.close()
+    # plt.tight_layout()
+    # plt.savefig(f'particle_resampled_pdf_beta_{beta:.3f}.png')
+    # plt.close()
