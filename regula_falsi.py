@@ -2,6 +2,7 @@ import numpy as np
 
 
 def NewBeta(potential, w_list, beta):
+        print(f"NewBeta called with potential={potential}, w_list={w_list}, beta={beta}")
     # Integrand for m(beta)
         def integrand_m(DeltaBeta):
             exponents = []
@@ -30,7 +31,7 @@ def NewBeta(potential, w_list, beta):
 
         # Function to find root of: f(x) = m(x)^2 * (cv_^2 + 1) - s(x)
         def f(x):
-            cv_ = 0.25
+            cv_ = 0.9
             m_val = integrand_m(x)
             s_val = integrand_s(x)
             val = cv_ * m_val - np.sqrt(s_val- m_val)
@@ -39,7 +40,7 @@ def NewBeta(potential, w_list, beta):
 
         # Regula Falsi method implementation
         def regula_falsi(f, beta, tol=1e-2, max_iter=2):
-            a = 1e-4
+            a = 0.0
             b = min(1.0 - beta, 1.0)
             fa = f(a)
             fb = f(b)

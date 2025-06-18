@@ -2,6 +2,8 @@ from laplace_solve import laplace_solver
 from resampling import resample
 from markov_kernal import markov_kernel
 from regula_falsi import NewBeta
+from regula_falsiiTest import new_beta_test
+from Potential import compute_potentials
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -28,7 +30,7 @@ experiment_noisy_versions = [
 experiment = np.mean(experiment_noisy_versions, axis=0)
 
 # Particle initialization
-num_particles = 1000
+num_particles = 10
 particles = np.random.uniform(low=-6.0, high=6.0, size=num_particles)
 particles_initial = particles.copy()  # Store initial particles for reference
 weights = [1.0 / num_particles] * num_particles  # Equal initial weights
@@ -36,15 +38,6 @@ weights = [1.0 / num_particles] * num_particles  # Equal initial weights
 # ----------------------------------
 # Potential Calculation Function
 # ----------------------------------
-
-def compute_potentials(n, particles, experiment, h):
-    """Calculate potential  for each particle."""
-    potentials = []
-    for p in particles:
-        sim_output, _ = laplace_solver(n, p)
-        l2_error = h**2 * np.sum((sim_output - experiment)**2) / 2
-        potentials.append(l2_error)
-    return potentials
 
 # Compute initial potential values
 potentials = compute_potentials(n, particles, experiment, h)
@@ -57,20 +50,19 @@ potentials = compute_potentials(n, particles, experiment, h)
 
 beta = 0.0
 
-while beta < 1.0:
-
-
-
+while beta < 0.9999:
 
 
     #-------------------------
     #step 1: calculating new beta
     #-------------------------
-    #delta = NewBeta(potentials, weights, beta)
-    delta = 0.1  # Limit the step size to avoid large jumps
-    beta += delta
+    #delta = new_beta_test(potentials, weights, beta)
+    delta = NewBeta(potentials, weights, beta)
+    #delta = 0.5  # Limit the step size to avoid large jumps
+    beta = min(beta + delta, 1.0)
+    print(f"Current beta: {beta:.3f}")
 
-    print(f"Updated beta: {beta:.4f}")
+    
 
     # Update weights using tempered likelihood
     #-------------------------
@@ -89,12 +81,14 @@ while beta < 1.0:
     #step 4: Markov kernel  
     #-------------------------
     particles = markov_kernel(particles, resampled_particles, experiment, n, h, beta)
+
+    #-------------------------
+    #step 5: recalculating potentials for new particles  
+    #-------------------------
+
+    potentials = compute_potentials(n, particles, experiment, h)
+
     #print("length of particles after MCMC step:", (particles))
-
-
-
-
-
 
     # -----------------------------
     # Visualization
