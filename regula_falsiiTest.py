@@ -6,6 +6,8 @@ import numpy as np
 # Test the f(x) function without running regula falsi
 def new_beta_test(potential, w_list, beta):
 
+    potential=potential*1000
+
     # Copy the inner function for testing
     def integrand_m(DeltaBeta):
         exponents = []

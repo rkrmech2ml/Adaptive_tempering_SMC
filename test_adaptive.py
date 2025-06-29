@@ -10,7 +10,7 @@ true_param = 2.0
 particles = np.random.uniform(-5, 5, num_particles)
 observation = true_param**2  # synthetic "truth"
 simulations = particles**2  # simulation: x^2
-potentials = 0.5*0.001 * (simulations - observation)**2  # quadratic loss
+potentials =  (simulations - observation)**2  # quadratic loss
 
 # Plot potentials2 and potentials
 plt.figure(figsize=(8, 4))
@@ -25,7 +25,7 @@ plt.tight_layout()
 plt.show()
 weights = np.ones(num_particles) / num_particles  # uniform weights
 beta_k = 0.0 
-print(f"Initial particles: {potentials}")
+print(f"Initial potential: {potentials}")
 # --- NewBeta function with standard regula falsi ---
 def NewBeta(potentials, weights, beta_k, cv_target=0.25):
     def m(delta_beta):

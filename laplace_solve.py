@@ -104,9 +104,9 @@ def laplace_solver(N, alpha):
         for i in range(0, N-1):
             for j in range(0, N-1):
                 if X[i, j] < 0.45:
-                    r[i, j] = h**2 * alpha
+                    r[i, j] = h**2 * alpha[0]
                 else:
-                    r[i, j] = 0
+                    r[i, j] = h**2 * alpha[1]
 
         # Plot the r values
         # fig = plt.figure(figsize=(10, 6))
