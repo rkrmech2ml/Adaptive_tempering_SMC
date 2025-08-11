@@ -4,147 +4,93 @@ import numpy as np
 
 
 
-#def NewBeta(potential, w_list, beta):
-def CoeffVariation(potential, w_list, beta):
-    #potential = (potential - np.min(potential)) / (np.max(potential) - np.min(potential))
-    #potential = (potential - np.mean(potential)) / np.std(potential)
-    #potential = potential * 10000  # Scale potential values for numerical stability
 
-
+def CoeffVariation(potential, w_list, beta,delta):
 
     def integrand_m(DeltaBeta):
-        exponents = [np.exp(-potential[i] * DeltaBeta) * w_list[i] for i in range(len(w_list))]
-        return np.sum(exponents)
+        weights = [np.exp(-potential[i] * DeltaBeta) * w_list[i] for i in range(len(w_list))]
+        return np.sum(weights)
 
     def integrand_s(DeltaBeta):
-        exponents = [(np.exp(-potential[i] * DeltaBeta) * w_list[i])**2 for i in range(len(w_list))]
-        return np.sum(exponents)
+        weights = [np.exp(-potential[i] * DeltaBeta)**2 * w_list[i] for i in range(len(w_list))]
+        return np.sum([w for w in weights])
 
     def f(x):
-        cv_ = 0.25  # Target coefficient of variation
+         # Target coefficient of variation
         m_val = integrand_m(x)
         s_val = integrand_s(x)
-        CalcCV =  cv_ * m_val -np.sqrt(max(0.0, s_val - m_val**2))                                                           # target_cv = 0.01
-        print(f"f({x:.4f}) = {CalcCV:.6f}")
+        print(f"m({x}) = {m_val:.6f}, s({x}) = {s_val:.6f}")
+        if  (s_val / m_val**2) < 1:
+            CalcCV = 0.0
+        else:
+            CalcCV = np.sqrt((s_val / m_val**2) - 1)  # 
+        print(f"CV Variation wrt tempering parameter  = {CalcCV:.6f}")
         return CalcCV
 
-    # def regula_falsi(f, beta, tol=1e-2, max_iter=20):
-    #     a = 0.0
-    #     b = min(1.0 - beta, 1.0)
-    #     fa = f(a)
-    #     fb = f(b)
-    #     if fa * fb > 0:
-    #         raise ValueError("f(a) and f(b) must have opposite signs")
-
-    #     for i in range(max_iter):
-    #         c = b - fb * (b - a) / (fb - fa)
-    #         fc = f(c)
-    #         if abs(fc) < tol:
-    #             print(f"Root found at x = {c:.6f} after {i+1} iterations.")
-    #             return c
-    #         if fa * fc < 0:
-    #             b, fb = c, fc
-    #             fb *= 0.5
-    #         else:
-    #             a, fa = c, fc
-    #             fa *= 0.5
-
-    #     raise RuntimeError("Regula Falsi did not converge")
-
-    CoeffVariation = f(beta)
+    CoeffVariation = f(delta)
     return CoeffVariation
 
+""" uncomment this section to do the adaptive tempering
+    This uses the Regula Falsi method to find the new beta value.
 
+ """
 
-# def NewBeta(potential, w_list, beta):
+def NewBeta(potential, w_list, beta):
+        
+        
        
-#         #print(f"NewBeta called with potential={potential}, w_list={w_list}, beta={beta}")
-#     # Integrand for m(beta)
-#         def integrand_m(DeltaBeta):
-#             exponents = []
-#             val = 0.0
-#             for i in range(len(w_list)):
-#                 val = np.exp(-potential[i] * DeltaBeta)* w_list[i]
-#                 exponents.append(val)
-#             #print(f"integrand_m({DeltaBeta}): {exponents}")
-#             # mean of all exponentials for current DeltaBeta
-#             mean_exp = np.sum(exponents)
-#             #print(f"(integrand_m({DeltaBeta}))^2: {mean_exp**2}")
-#             return mean_exp
+        #print(f"NewBeta called with potential={potential}, w_list={w_list}, beta={beta}")
+    # Integrand for m(beta)
+        
+        def integrand_m(DeltaBeta):
+            weights = [np.exp(-potential[i] * DeltaBeta) * w_list[i] for i in range(len(w_list))]
+            return np.sum(weights)
 
-#         # Integrand for s(beta)
-#         def integrand_s(DeltaBeta):
-#             exponents2 = []
-#             val = 0.0
-#             for i in range(len(w_list)):
-#                 val = np.exp((-(potential[i]  * DeltaBeta)))**2 * w_list[i]
-#                 exponents2.append(val)
-#             #print(f"integrand_s({DeltaBeta}): {exponents2}")
-#             mean_exp2 = np.sum(exponents2)
-#             #print(f"integrand_s({DeltaBeta}): {mean_exp2}")
-#             return mean_exp2
+        def integrand_s(DeltaBeta):
+            weights = [np.exp(-potential[i] * DeltaBeta)**2 * w_list[i] for i in range(len(w_list))]
+            return np.sum([w for w in weights])
+        # Function to find root of: f(x) = m(x)^2 * (cv_^2 + 1) - s(x)
+        def f(x):
+            cv_ = 0.25
+            m_val = integrand_m(x)
+            s_val = integrand_s(x)
+            print(f"m({x}) = {m_val:.6f}, s({x}) = {s_val:.6f}")
+            print(np.sqrt(np.maximum(0.0,s_val- m_val**2)))
+            val = cv_ * m_val - np.sqrt(np.maximum(0.0,s_val- m_val**2))
+            print(f"f({x}): f={val}")
+            return val
 
-#         # Function to find root of: f(x) = m(x)^2 * (cv_^2 + 1) - s(x)
-#         def f(x):
-#             cv_ = 0.01
-#             m_val = integrand_m(x)
-#             s_val = integrand_s(x)
-#             val = cv_ * m_val - np.sqrt(s_val- m_val**2)
-#             print(f"f({x}): f={val}")
-#             return val
-#         # import matplotlib.pyplot as plt
-#         x_vals = np.linspace(0, 1, 100)
-#         m_vals = [integrand_m(x) for x in x_vals]
-#         s_vals = [integrand_s(x) for x in x_vals]
-#         y_vals = [f(x) for x in x_vals]
-
-#         # print(f"m_vals: {m_vals}")
-#         # print(f"s_vals: {s_vals}")
-#         # print(f"y_vals: {y_vals}")
-
-#         # plt.figure(figsize=(10, 6))
-#         # plt.plot(x_vals, m_vals, label="m(x)")
-#         # plt.plot(x_vals, s_vals, label="s(x)")
-#         # plt.plot(x_vals, y_vals, label="f(x)")
-#         # plt.xlabel("x")
-#         # plt.ylabel("Value")
-#         # plt.title("Plot of m(x), s(x), and f(x)")
-#         # plt.legend()
-#         # plt.grid(True)
-#         # plt.show()
+        # Regula Falsi method implementation
+        def regula_falsi(f, a, b, tol=1e-3, max_iter=50):
+            fa = f(a)
+            fb = f(b)
 
 
-#         # Regula Falsi method implementation
-#         def regula_falsi(f, beta, tol=1e-2, max_iter=20):
-#             a = 0.0
-#             b = min(1.0 - beta, 1.0)
-#             fa = f(a)
-#             fb = f(b)
+            if fa * fb > 0:
+                raise ValueError("f(a) and f(b) must have opposite signs")
 
-#             if fa * fb > 0:
-#                 raise ValueError("f(a) and f(b) wst have opposite signs")
-            
+            for i in range(max_iter):
+                c = b - fb * (b - a) / (fb - fa)
+                fc = f(c)
 
-#             for i in range(max_iter):
-#                 # Regula Falsi forwla
-#                 c = b - fb * (b - a) / (fb - fa)
-#                 fc = f(c)
+            if abs(fc) < tol:
+                print(f"Root found at x = {c:.6f} after {i+1} iterations.")
+                return c
 
-#                 if abs(fc) < tol:
-#                     print(f"Root found at x = {c:.6f} after {i+1} iterations.")
-#                     return c
+            if fa * fc < 0:
+                b, fb = c, fc
+            else:
+                a, fa = c, fc
 
-#                 if fa * fc < 0:
-#                     b, fb = c, fc
-#                     fb *= 0.5  # Illinois method
-#                 else:
-#                     a, fa = c, fc
-#                     fa *= 0.5
-#             # If loop ends without return, raise error outside the loop
-#             raise RuntimeError("Regula Falsi method did not converge")
+            raise RuntimeError("Regula Falsi did not converge")
 
-#         delta = regula_falsi(f, beta)
-#         return delta
+        try:
+            delta = regula_falsi(f, a=0.0, b=1.0 - beta)
+        except Exception as e:
+            print(f"[WARN] Regula Falsi failed: {e}. Falling back to Δβ = 0.01")
+            delta = 0.01
+
+        return delta
 
 
 # def NewBeta(potentials, weights, beta_k, cv_target=0.25):

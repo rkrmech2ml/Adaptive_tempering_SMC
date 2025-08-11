@@ -1,6 +1,5 @@
 import numpy as np
 import scipy.stats as stats
-
 # math functions
 import math 
 # THIS IS FOR PLOTTING
@@ -115,9 +114,7 @@ def laplace_solver(N, alpha):
         # ax.plot_surface(X_r, Y_r, r, cmap='viridis')
         # ax.set_title('3D Plot of r values')
         # ax.set_xlabel('X')
-        # ax.set_ylabel('Y')
-        # ax.set_zlabel('r')
-        # plt.show()
+        # plt.show()        
         # print(r)
         return r.flatten() # Flatten the array to match the shape of A
 
