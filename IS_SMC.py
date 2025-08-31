@@ -35,7 +35,7 @@ plt.show()
 
 # Add noise to simulate measurement errors
 num_noisy_versions = 5
-noise_levels = np.random.uniform(0, 0.05, size=num_noisy_versions)
+noise_levels = np.random.uniform(0, 0.0005, size=num_noisy_versions)
 print(f"Noise levels: {noise_levels}")
 
 experiment_noisy_versions = [
