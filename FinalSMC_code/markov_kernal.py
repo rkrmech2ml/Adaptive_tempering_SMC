@@ -14,9 +14,9 @@ def markov_kernel(particles,particles_initial, resampled_particles, experiment, 
     gamma = 0.1
     particles = np.array(particles)
     resampled_particles = np.array(resampled_particles)
-    spread1 = np.max(resampled_particles[:, 0]) - np.min(resampled_particles[:, 0])
+    spread1 = np.max(particles[:, 0]) - np.min(particles[:, 0])
     #print(f"Spread in first dimension: {spread1}")
-    spread2 = np.max(resampled_particles[:, 1]) - np.min(resampled_particles[:, 1])
+    spread2 = np.max(particles[:, 1]) - np.min(particles[:, 1])
     #print(f"Spread in second dimension: {spread2}")
     i=0
     for i in range(len(resampled_particles)):
@@ -31,7 +31,7 @@ def markov_kernel(particles,particles_initial, resampled_particles, experiment, 
 
         
         # Calculate likelihoods for the new candidate and the current value
-        like_hood_v = np.exp( -(h**2 * np.sum((laplace_solver(n, [new_v1,new_v2])[0] - experiment)**2) / 2))
+        like_hood_v = np.exp(-(h**2 * np.sum((laplace_solver(n, [new_v1,new_v2])[0] - experiment)**2) / 2))
     
         like_hood_ui = np.exp(-(h**2 * np.sum((laplace_solver(n, resampled_particles[i])[0] - experiment)**2) / 2))
  

@@ -7,11 +7,13 @@ from Potential import compute_potentials
 
 import numpy as np
 from scipy.stats import norm
+import os
+import imageio
 import matplotlib.pyplot as plt
 
 #testing the version in git
 
-# ---------------------------------
+# ---------------------------------s
 # Configuration & Initialization
 # ---------------------------------
 
@@ -23,19 +25,19 @@ x = np.arange(0, 1.00001, h)
     #print((x))
 y = np.arange(0, 1.00001, h)
 X, Y = np.meshgrid(x, y)
-plt.figure()
-plt.contourf(X, Y, experiment_exact, cmap='viridis')
-plt.colorbar(label='u(x,y)')
-plt.title('2D Contour Plot of the Solution to Laplace Equation')
-plt.xlabel('X-coordinate')
-plt.ylabel('Y-coordinate')
-plt.show()
+# plt.figure()
+# plt.contourf(X, Y, experiment_exact, cmap='viridis')
+# plt.colorbar(label='u(x,y)')
+# plt.title('2D Contour Plot of the Solution to Laplace Equation')
+# plt.xlabel('X-coordinate')
+# plt.ylabel('Y-coordinate')
+# plt.show()
 
 
 
 # Add noise to simulate measurement errors
 num_noisy_versions = 5
-noise_levels = np.random.uniform(0, 0.1, size=num_noisy_versions)
+noise_levels = np.random.uniform(0, 0.05, size=num_noisy_versions)
 print(f"Noise levels: {noise_levels}")
 
 experiment_noisy_versions = [
@@ -43,33 +45,32 @@ experiment_noisy_versions = [
     for sigma in noise_levels
 ]
 
-
-
-
 experiment = np.mean(experiment_noisy_versions, axis=0)
-plt.figure()
-plt.contourf(X, Y, experiment, cmap='viridis')
-plt.colorbar(label='u(x,y)')
-plt.title('2D Contour Plot of the Solution to Laplace Equation')
-plt.xlabel('X-coordinate')
-plt.ylabel('Y-coordinate')
-plt.show()
 
-# Plot experiment (noisy average) and experiment_exact (ground truth)
-plt.figure(figsize=(8, 4))
-plt.plot(experiment_exact, label='(ground truth)', marker='o')
-plt.plot(experiment, label=' (noisy average)', marker='x')
-plt.xlabel('Index')
-plt.ylabel('Value')
-plt.title('Comparison of experiment_exact and experiment')
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+
+# plt.figure()
+# plt.contourf(X, Y, experiment, cmap='viridis')
+# plt.colorbar(label='u(x,y)')
+# plt.title('2D Contour Plot of the Solution to Laplace Equation')
+# plt.xlabel('X-coordinate')
+# plt.ylabel('Y-coordinate')
+# plt.show()
+
+# # Plot experiment (noisy average) and experiment_exact (ground truth)
+# plt.figure(figsize=(8, 4))
+# plt.plot(experiment_exact, label='(ground truth)', marker='o')
+# plt.plot(experiment, label=' (noisy average)', marker='x')
+# plt.xlabel('Index')
+# plt.ylabel('Value')
+# plt.title('Comparison of experiment_exact and experiment')
+# plt.legend()
+# plt.grid(True)
+# plt.tight_layout()
+# plt.show()
 
 
 # Particle initialization
-num_particles = 5000
+num_particles = 50
 particles = np.random.uniform(
     low=[-5.0, -1.0], 
     high=[4.0, 7.0], 
@@ -91,14 +92,14 @@ weights = [1.0 / num_particles] * num_particles
 potentials = compute_potentials(n, particles, experiment, h)
 print(f"Initial potentials: {np.shape(potentials)}")
 print(f"Initial particles shape: {particles.shape}")
-plt.figure(figsize=(8, 4))
-plt.plot(particles[:,0], potentials, 'bo', alpha=0.6)  # Plot first dimension of particles
-plt.xlabel('Particle Value (0th column)')
-plt.ylabel('Potential')
-plt.title('Potential vs Particle Value (0th column)')
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+# plt.figure(figsize=(8, 4))
+# plt.plot(particles[:,0], potentials, 'bo', alpha=0.6)  # Plot first dimension of particles
+# plt.xlabel('Particle Value (0th column)')
+# plt.ylabel('Potential')
+# plt.title('Potential vs Particle Value (0th column)')
+# plt.grid(True)
+# plt.tight_layout()
+# plt.show()
 print(f"Potential values: {np.shape(potentials)}")
 
 # -----------------------------
@@ -129,18 +130,46 @@ while beta < 0.9999:
     likelihoods = [np.exp(-beta * pot) for pot in potentials]
     norm_factor = sum(likelihoods)
     weights = [lk / norm_factor for lk in likelihoods]
+
+    fig, axes = plt.subplots(1, 3, figsize=(12, 5))
+
+    axes[0].vlines(particles[:,0], 0, weights, colors="blue", lw=2, alpha=0.7)
+    axes[0].set_title("after importance sampling (weights)")
+    axes[0].set_xlabel("Particle")
+    axes[0].set_ylabel("Weight")
+    axes[0].set_ylim(min(weights), max(weights))
+    axes[0].grid(True)
+
     #-------------------------
     #step 3: resampling 
     #-------------------------
-    resampled_particles = resample(particles, weights)
+    resampled_particles = resample(particles, weights,visualize=True)
+
+    weights = [1.0 / num_particles] * num_particles
+    axes[1].vlines(resampled_particles[:,0], 0, weights, colors="blue", lw=2, alpha=0.7)
+    axes[1].set_title("After Resampling (weights)")
+    axes[1].set_xlabel("Particle")
+    axes[1].set_ylabel("Weight")
+    axes[1].set_ylim(min(weights), max(weights))
+    axes[1].grid(True)
     #print(f"Resampled particles: {resampled_particles}")
  
-    weights = [1.0 / num_particles] * num_particles  # Reset weights to  1/num_particles 
+      # Reset weights to  1/num_particles 
     #print(f"weights reset: {weights}")
     #-------------------------
     #step 4: Markov kernel  
     #-------------------------
     particles = markov_kernel(particles,particles_initial, resampled_particles, experiment, n, h, beta)
+
+    axes[2].vlines(particles[:,0], 0, weights, colors="blue", lw=2, alpha=0.7)
+    axes[2].set_title("After Markov  (weights)")
+    axes[2].set_xlabel("Particle")
+    axes[2].set_ylabel("Weight")
+    axes[2].set_ylim(min(weights), max(weights))
+    axes[2].grid(True)
+    plt.tight_layout()
+    plt.show()
+
     #print(f"Particles after Markov kernel: {particles}")
 
     #-------------------------
@@ -155,11 +184,17 @@ while beta < 0.9999:
     # -----------------------------
     # Visualization
     # -----------------------------
+    import matplotlib.animation as animation
+
+    # Create directory for results if it doesn't exist
+    os.makedirs('results/trial_BetaStep0_01', exist_ok=True)
+
+    # Store frames for animation
+    if 'frames' not in locals():
+        frames = []
+
     fig, axs = plt.subplots(2, 2, figsize=(14, 10))
     particles = np.array(particles)
-    # Calculate mean and standard deviation of both particle columns
-
-
 
     # Top-left: Histogram of particles[:, 0]
     axs[0, 0].hist(particles[:, 0], bins=50, density=True, alpha=0.7, color='orange', label='Current')
@@ -190,8 +225,19 @@ while beta < 0.9999:
     axs[1, 1].legend()
 
     plt.tight_layout()
-    plt.savefig(f'results/BetaStep0_001/particle_histograms_beta_{beta:.3f}.png')
-    plt.close()
+
+    # Save current figure as a frame for animation
+    fig.canvas.draw()
+    frame = np.frombuffer(fig.canvas.tostring_argb(), dtype='uint8')
+    frame = frame.reshape(fig.canvas.get_width_height()[::-1] + (4,))
+    frame = frame[..., 1:]  # Keep only RGB channels
+    frames.append(frame)
+
+    plt.close(fig)
+
+    # After the SMC loop, create and save the animation
+    if beta >= 0.9999 and len(frames) > 1:
+        imageio.mimsave('results/trial_BetaStep0_01/particle_histograms_animation.gif', frames, fps=2)
 
     
     
@@ -211,7 +257,7 @@ while beta < 0.9999:
     plt.title('Coefficient of Variation vs Beta')
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig(f'results/BetaStep0_001/cv_vs_beta for beta step{delta}.png')
+    plt.savefig(f'results/trial_BetaStep0_01//cv_vs_beta for beta step{delta}.png')
     plt.close()
 
 
