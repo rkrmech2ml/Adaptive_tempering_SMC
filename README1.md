@@ -10,7 +10,7 @@ The workflow combines **forward PDE simulation** with **sampling-based inference
 
 **Final posterior Posterior**
 
-[Final posterior](results/particle_histograms_beta_1.000.png)
+![Final posterior](results/particle_histograms_beta_1.000.png)
 
 
 
