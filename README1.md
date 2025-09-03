@@ -1,7 +1,15 @@
 # Bayesian Inversion with Laplace PDE
 
-This project demonstrates **Bayesian inversion** applied to a **Toy Example**.  
-The workflow combines **forward PDE simulation** with **sampling-based inference** methods such as **SMC (Sequential Monte Carlo)** and **MCMC (Metropolis-Hastings)** to recover unknown parameters from data.
+Bayesian inference and SMC are powerful in scenarios where uncertainty and noisy data are central. Some practical applications include:  
+
+- **Medical Diagnosis**: Updating disease probability as new patient test results arrive.  
+- **Financial Forecasting**: Estimating hidden market parameters under uncertainty.  
+- **Robotics & Control**: Sensor fusion and localization (Bayesian filters).  
+- **Climate Modeling**: Combining simulation with noisy observational data.  
+- **Engineering Design**: Inverse problems (e.g., material property estimation from stress/strain data).  
+
+This project demonstrates Bayesian inversion using **SMC with  tempering**, applied to solving the Laplace equation with noisy observations.  
+
 
 ![BayesianInverse](results/bayesainInverse.png)
 
