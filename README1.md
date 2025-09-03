@@ -2,6 +2,14 @@
 
 This project demonstrates **Bayesian inversion** applied to a **Toy Example**.  
 The workflow combines **forward PDE simulation** with **sampling-based inference** methods such as **SMC (Sequential Monte Carlo)** and **MCMC (Metropolis-Hastings)** to recover unknown parameters from data.
+
+Partilce based apporach 
+![BayesianInverse](results/bayesainInverse.png)
+
+SMC block Diagram
+
+![SMCDiagram](results/SMC.png)
+
 ![SMC Particle Animation](results/particle_histograms_animation.gif)
 
 **Initial Posterior** Parameter 1 ∼ Uniform[4.0, 5.0] ,Parameter 2 ∼ Uniform[1.0, 7.0]
