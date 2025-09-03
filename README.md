@@ -40,7 +40,7 @@ SMC block Diagram
 ---
 
 # 📂 Repository Structure
-├── main.py # Main entry point for running Bayesian inversion.
+├── main.py # Read me.Change brange to **Thesis_code**
 
 ├── laplace_solver.py # PDE forward model (Laplace solver).
 
