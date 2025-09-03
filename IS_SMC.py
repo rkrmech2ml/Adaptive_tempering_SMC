@@ -35,7 +35,7 @@ plt.show()
 
 # Add noise to simulate measurement errors
 num_noisy_versions = 5
-noise_levels = np.random.uniform(0, 0.0005, size=num_noisy_versions)
+noise_levels = np.random.uniform(0, 0.1, size=num_noisy_versions)
 print(f"Noise levels: {noise_levels}")
 
 experiment_noisy_versions = [
@@ -70,11 +70,14 @@ plt.show()
 
 # Particle initialization
 num_particles = 5000
-particles = np.random.uniform(
-    low=[-5.0, -1.0], 
-    high=[4.0, 7.0], 
-    size=(num_particles, 2)
-)
+particles = np.zeros((num_particles, 2))
+particles[:, 0] = np.random.uniform(low=-3.0, high=5.0, size=num_particles)  # uniform between -3 and 5
+particles[:, 1] = np.random.uniform(low=-1.0, high=7.0, size=num_particles)  # uniform between -1 and 7
+
+print("mean of initial particle1:", np.mean(particles[:,0]))
+print("std of initial particle1:", np.std(particles[:,0]))
+print("mean of initial particle2:", np.mean(particles[:,1]))
+print("std of initial particle2:", np.std(particles[:,1]))
 
 print(f"Initial particles: {particles}")
 particles_initial = particles.copy()
@@ -126,7 +129,7 @@ while beta < 0.9999:
     #-------------------------
     #step 2: importance sampling 
     #-------------------------
-    likelihoods = [np.exp(-beta * pot) for pot in potentials]
+    likelihoods = [np.exp(-delta * pot) for pot in potentials]
     norm_factor = sum(likelihoods)
     weights = [lk / norm_factor for lk in likelihoods]
     #-------------------------

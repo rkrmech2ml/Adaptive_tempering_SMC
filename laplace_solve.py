@@ -98,14 +98,14 @@ def laplace_solver(N, alpha):
 
     #     return r.flatten()  # Flatten the array to match the shape of A
     def f(alpha):
-        #source = np.sin(np.linspace(0.05, 2*np.pi, ((N-2)*(N-2))))+70
         r = np.zeros((N-1, N-1))
-        for i in range(0, N-1):
-            for j in range(0, N-1):
-                if X[i, j] < 0.45:
-                    r[i, j] = h**2 * alpha[0]
-                else:
-                    r[i, j] = h**2 * alpha[1]
+        for i in range(N-1):
+            for j in range(N-1):
+                # Example: smooth transition using a sigmoid function
+                # You can adjust the center (0.45), width (0.05), and scaling as needed
+                transition = 1 / (1 + np.exp(-(X[i+1, j+1] - 0.45) / 0.05))
+                r[i, j] = h**2 * (alpha[0] * (1 - transition) + alpha[1] * transition)
+        return r.flatten()
 
         # Plot the r values
         # fig = plt.figure(figsize=(10, 6))
