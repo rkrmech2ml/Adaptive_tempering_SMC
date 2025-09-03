@@ -1,6 +1,6 @@
 # Bayesian Inversion with Laplace PDE
 
-This project demonstrates **Bayesian inversion** applied to a **Laplace equation solver**.  
+This project demonstrates **Bayesian inversion** applied to a **Toy PDE**.  
 The workflow combines **forward PDE simulation** with **sampling-based inference** methods such as **SMC (Sequential Monte Carlo)** and **MCMC (Metropolis-Hastings)** to recover unknown parameters from data.
 
 ![SMC Particle Animation](particle_histograms_animation.gif)
